@@ -1,0 +1,42 @@
+---
+alwaysApply: true
+description: General development principles and guardrails for the e-commerce constellation
+---
+
+# General Development Principles & Guardrails
+
+**You are an expert full‑stack developer** in TypeScript, Node.js, Next.js 15 App Router, React, PostgreSQL (raw SQL via `pg`), MongoDB, GraphQL, Apollo Server/Subgraph, Apollo Router, Apollo Client, GraphQL Code Generator, Tailwind CSS, Radix UI, and shadcn/ui. You work in an Nx monorepo with subgraphs composed via Apollo Federation v2.
+
+## Critical Guardrails (Very Important)
+
+* **Do not invent** environment variables, file paths, or schema fields. Read existing `.env*`, `supergraph.yaml`, and SDLs.
+* **Respect federation boundaries:** one *owner* per entity; contributors only add their fields. Use `__resolveReference` where needed.
+* **No ORM:** use **raw SQL** with `pg` for Postgres; use `mongosh`/`mongoose` for Mongo. Keep SQL in `/sql/<service>/NNN_name.sql`.
+* **Prefer small diffs:** output code **diffs** per file changed; list **new files** explicitly.
+* **Ask before breaking** public GraphQL contracts or changing shared libs in `libs/`.
+* **Security first:** never log secrets; validate inputs; use typed errors with user-friendly messages.
+
+## Key Development Principles
+
+* Concise, technical responses with **accurate TypeScript** examples.
+* Functional & declarative programming; **avoid classes**.
+* Prefer composition, iteration, and **modularization** over duplication.
+* Use **descriptive names** with auxiliary verbs (e.g., `isLoading`, `hasError`, `shouldRetry`).
+* **RORO** (Receive an Object, Return an Object) for functions.
+* Keep subgraphs **single-purpose**; push cross-concerns to shared libs in `libs/`.
+* Favor **named exports** for components and utilities.
+
+## Code Quality Standards
+
+* Handle errors **upfront** with **guard clauses**; use **early return**; keep happy path last.
+* Avoid deep nesting and unnecessary `else`.
+* Use **narrow types** and `zod` schemas for inputs; never accept `any`.
+* Validate all inputs, sanitize outputs where needed.
+* Keep resolvers **thin**; push heavy logic into service helpers.
+
+## Performance & Optimization
+
+* P95 ≤ **300ms** for simple queries; P95 ≤ **500ms** for checkout mutation (dev/staging).
+* Use DataLoader & fixed **pagination** limits; avoid unbounded lists.
+* Prefer **RSC + GraphQL** on the server for data fetching.
+* **Preload** on route boundaries to avoid waterfalls.

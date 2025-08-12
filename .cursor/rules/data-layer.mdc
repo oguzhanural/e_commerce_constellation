@@ -1,0 +1,75 @@
+---
+globs: **/sql/**,**/db/**,**/database/**,**/models/**
+description: Data layer patterns for PostgreSQL and MongoDB
+---
+
+# Data Layer (PostgreSQL & MongoDB)
+
+## Database Standards
+
+* **No ORM:** use **raw SQL** with `pg` for Postgres; use `mongosh`/`mongoose` for Mongo.
+* Keep SQL in `/sql/<service>/NNN_name.sql`.
+* **Connection strings:** from `.env`; do not hardcode.
+
+## PostgreSQL Patterns
+
+* **Postgres:** `pg` Pool, parameterized queries, **no ORM**.
+* Keep SQL in versioned files, run via `psql`.
+* **Transactions:** use Postgres transactions for order/payment invariants.
+* **Least privilege** DB roles; never log tokens or PII.
+
+```ts
+// Example: Parameterized query with pg
+export async function fetchPrice({ productId }: { productId: string }) {
+  if (!productId) throw new Error('productId is required')
+  const { rows } = await pool.query(
+    'select amount, currency from product_price where product_id=$1', 
+    [productId]
+  )
+  if (!rows[0]) return { amount: 0, currency: 'TRY' }
+  const { amount, currency } = rows[0]
+  return { amount, currency }
+}
+```
+
+## MongoDB Patterns
+
+* **Mongo:** simple collections for catalog; indexes for `slug`, `title` search.
+* Use mongoose for schema validation and connection management.
+* Design documents for read optimization.
+
+## Migration Management
+
+* **Migrations:** `sql/<service>/NNN_name.sql` executed via `psql`.
+* Version migrations with sequential numbers (001, 002, etc.).
+* Include rollback scripts where necessary.
+* Test migrations on staging before production.
+
+## Performance & Optimization
+
+* **Computed totals:** MVP computes **on read**; document this in code comments.
+* Add proper indexes for common query patterns.
+* Use connection pooling for all database connections.
+* Monitor slow queries and optimize regularly.
+
+## Data Validation
+
+* Validate all inputs with **zod** schemas before database operations.
+* Use database constraints as the final validation layer.
+* Handle unique constraint violations gracefully.
+
+## Example Migration
+
+```sql
+-- sql/pricing/001_create_product_price.sql
+CREATE TABLE product_price (
+    id SERIAL PRIMARY KEY,
+    product_id VARCHAR(255) NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    currency VARCHAR(3) NOT NULL DEFAULT 'TRY',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_product_price_product_id ON product_price(product_id);
+```

@@ -1,0 +1,85 @@
+---
+alwaysApply: true
+description: Security best practices and secrets management
+---
+
+# Security & Secrets Management
+
+## Authentication & Authorization
+
+* JWT verification at Router; pass `userId` via context.
+* **Least privilege** DB roles; never log tokens or PII.
+* Validate user permissions at resolver level before data access.
+
+## Input Validation & Sanitization
+
+* Validate all inputs (zod), sanitize outputs where needed.
+* Use parameterized queries to prevent SQL injection.
+* Sanitize user-generated content before storage and display.
+
+## Secrets Management
+
+* Secrets only in `.env` (local) or CI secrets. Do not commit.
+* Never hardcode API keys, database credentials, or JWT secrets.
+* Use environment-specific secret management (AWS Secrets Manager, etc.).
+
+```ts
+// Good: Environment-based configuration
+const config = {
+  dbUrl: process.env.DATABASE_URL,
+  jwtSecret: process.env.JWT_SECRET,
+  stripeKey: process.env.STRIPE_SECRET_KEY
+}
+
+// Bad: Hardcoded secrets
+const config = {
+  dbUrl: "postgresql://user:password@localhost:5432/db",
+  jwtSecret: "hardcoded-secret-key"
+}
+```
+
+## Logging & Monitoring
+
+* **Security first:** never log secrets; validate inputs; use typed errors with user-friendly messages.
+* Log security events (failed auth, suspicious activity).
+* Include request context (requestId, userId) in logs.
+
+```ts
+// Good: Contextual logging without secrets
+logger.error('Authentication failed', { 
+  requestId, 
+  ipAddress, 
+  userAgent,
+  timestamp: new Date().toISOString()
+})
+
+// Bad: Logging sensitive data
+logger.error('Auth failed', { password, token })
+```
+
+## API Security
+
+* Use HTTPS everywhere in production.
+* Implement rate limiting on sensitive endpoints.
+* Validate CORS settings for frontend applications.
+* Use CSP headers to prevent XSS attacks.
+
+## Database Security
+
+* Use connection pooling with appropriate limits.
+* Implement database-level constraints and validation.
+* Regular security updates for database systems.
+* Backup encryption and secure storage.
+
+## Error Handling Security
+
+* Return generic error messages to clients.
+* Log detailed errors server-side with context.
+* Never expose stack traces or internal paths to clients.
+
+## Development Security
+
+* Use `.env.example` files to document required environment variables.
+* Git ignore all `.env*` files except `.env.example`.
+* Rotate secrets regularly in production environments.
+* Use different secrets for each environment (dev/staging/prod).

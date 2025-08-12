@@ -1,0 +1,75 @@
+---
+globs: *.graphql,*.gql,**/resolvers/**,**/schema/**
+description: GraphQL and Apollo Federation v2 patterns and guidelines
+---
+
+# GraphQL & Apollo Federation v2
+
+## Federation Principles
+
+* **Respect federation boundaries:** one *owner* per entity; contributors only add their fields.
+* **Owner subgraph** defines `@key` and authoritative fields for the entity.
+* **Contributor subgraphs** `extend type` with `@external` refs and contribute new fields.
+* Use `__resolveReference` for entity lookups by `id` (minimal reference).
+
+## Schema Design
+
+* Use `@requires` only if a contributed field needs owner fields; use `@provides` sparingly.
+* **Schema hygiene:** small, focused schemas; consistent scalars; avoid overfetching in client queries.
+* Keep **schema files** organized by entity/domain.
+
+## Federation Example
+
+```graphql
+# Owner (Catalog)
+type Product @key(fields: "id") {
+  id: ID!
+  slug: String!
+  title: String!
+  description: String
+  categoryId: ID
+}
+
+# Contributor (Pricing)
+extend type Product @key(fields: "id") {
+  id: ID! @external
+  currentPrice: Money!
+}
+```
+
+## Resolver Patterns
+
+* Keep resolvers **thin**; push heavy logic into service helpers.
+* Add **DataLoader** per subgraph to avoid N+1.
+* Implement `__resolveReference` for all federated entities.
+
+**Resolver with DataLoader**
+
+```ts
+// apps/subgraphs/pricing/src/loaders.ts
+export function makePriceLoader(pool: pg.Pool) {
+  return new DataLoader<string, { amount: number, currency: string }>(async keys => {
+    const { rows } = await pool.query('select product_id, amount, currency from product_price where product_id = any($1)', [keys])
+    const map = new Map(rows.map(r => [r.product_id, { amount: r.amount, currency: r.currency }]))
+    return keys.map(k => map.get(k) ?? { amount: 0, currency: 'TRY' })
+  })
+}
+```
+
+## Code Generation
+
+* **GraphQL Codegen**: keep server/client types updated; PR fails if outdated.
+* Store generated types in `libs/shared-types`.
+* Use consistent naming for operations and fragments.
+
+## Schema Composition
+
+* **Contract/Composition:** CI runs rover composition; add router smoke queries.
+* **supergraph compose** artifact in CI/CD pipeline.
+* Never break existing public GraphQL contracts without coordination.
+
+## Performance
+
+* Use **pagination** limits; avoid unbounded lists.
+* Implement proper caching strategies at resolver level.
+* Monitor query complexity and depth.

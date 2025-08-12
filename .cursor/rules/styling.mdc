@@ -1,0 +1,69 @@
+---
+globs: *.tsx,*.jsx,*.css,*.scss
+description: Styling guidelines using Tailwind CSS, Radix UI, and shadcn/ui
+---
+
+# Styling Guide (Tailwind, Radix, shadcn/ui)
+
+## Framework Approach
+
+* Utility-first Tailwind with **CVA** for variants.
+* Use Radix primitives for accessibility; wrap with shadcn/ui patterns.
+* Consistent **tokens** (colors, spacing, radii, shadows) from our design guidelines.
+
+## Class Organization
+
+* Prefer semantic classes (e.g., `btn-primary`, `card`, `input`) mapped to Tailwind utilities.
+* Group related utilities together:
+  ```tsx
+  // Layout first, then styling
+  className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg shadow-sm"
+  ```
+
+## Component Patterns
+
+* Use **CVA** (Class Variance Authority) for component variants:
+  ```tsx
+  import { cva } from 'class-variance-authority'
+  
+  const buttonVariants = cva(
+    'inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors',
+    {
+      variants: {
+        variant: {
+          default: 'bg-primary text-primary-foreground hover:bg-primary/90',
+          destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
+        },
+        size: {
+          default: 'h-10 px-4 py-2',
+          sm: 'h-9 rounded-md px-3',
+          lg: 'h-11 rounded-md px-8',
+        },
+      },
+    }
+  )
+  ```
+
+## Accessibility & Components
+
+* Always use Radix primitives for complex interactive components.
+* Wrap Radix components with shadcn/ui styling patterns.
+* Ensure proper focus management and keyboard navigation.
+
+## Design System
+
+* Use consistent design tokens from `tailwind.config.js`.
+* Follow semantic color naming (primary, secondary, destructive, etc.).
+* Maintain consistent spacing scale (4px base unit).
+
+## Performance
+
+* Avoid style props; prefer className composition.
+* Use Tailwind's purge configuration to minimize bundle size.
+* Prefer CSS custom properties for dynamic values.
+
+## File Organization
+
+* Keep component styles co-located with components.
+* Use `globals.css` only for base styles and CSS custom properties.
+* Organize utility classes in logical groups within components.

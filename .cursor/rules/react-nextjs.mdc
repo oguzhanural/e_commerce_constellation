@@ -1,0 +1,59 @@
+---
+globs: *.tsx,*.jsx
+description: React and Next.js 15 App Router patterns and best practices
+---
+
+# React & Next.js 15 App Router
+
+## Component Patterns
+
+* Functional components + TS interfaces. **Server Components by default**; minimize `use client`.
+* **Exports:** favor **named** component exports.
+* Place **static content and interfaces at file end** to keep render concise.
+
+## Data Fetching
+
+* Data fetching **server-side** (RSC or GraphQL on the server). Avoid client fetching unless interactive.
+* Prefer **RSC + GraphQL** on the server for data fetching.
+* **Preload** on route boundaries to avoid waterfalls.
+* Client state limited to UI interaction (forms, dialogs). Avoid global state unless necessary.
+
+## Performance & UX
+
+* Wrap client components in **`<Suspense>`** with fallbacks; lazy-load non-critical UI.
+* Use **next/image** with WebP, width/height, and lazy loading.
+
+## Forms & Validation
+
+* **Forms:** `react-hook-form` + `zod`. Prefer **next-safe-action** for server actions (if used); otherwise **GraphQL mutations**.
+* Validation via **zod** (server actions & resolvers).
+
+## Error Handling
+
+* **Errors:** model expected errors as return values for Server Actions; use `error.tsx`/`global-error.tsx` for boundaries.
+* **Resolvers/services** must log with context (requestId, userId) and return **user-friendly** messages.
+
+## Ready-to-Use Pattern
+
+**Server component + GraphQL fetch (RSC)**
+
+```tsx
+// apps/web/app/products/page.tsx
+import { getClient } from '@/lib/apollo'
+import { gql } from '@apollo/client'
+
+const QUERY = gql`query { products { id title currentPrice { amount currency } inStock } }`
+
+export default async function ProductsPage() {
+  const client = getClient()
+  const { data } = await client.query({ query: QUERY })
+  if (!data?.products?.length) return <p>No products</p>
+  return <ul>{data.products.map(p => <li key={p.id}>{p.title}</li>)}</ul>
+}
+```
+
+## Component Organization
+
+* **File order:** exported component → subcomponents → helpers → static content → types/interfaces.
+* Keep components **single-purpose** and **composable**.
+* Use **descriptive names** with auxiliary verbs for state (e.g., `isLoading`, `hasError`).

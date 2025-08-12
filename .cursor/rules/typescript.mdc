@@ -1,0 +1,51 @@
+---
+globs: *.ts,*.tsx,*.js,*.jsx
+description: TypeScript and JavaScript style guide and conventions
+---
+
+# TypeScript & JavaScript Style Guide
+
+## Language Standards
+
+* Use `function` declarations for pure functions and components; **omit semicolons**.
+* Use **TypeScript everywhere**. Prefer **interfaces** for object shapes; use `type` for unions & mapped/utility types.
+* Avoid unnecessary braces; allow one-line conditionals: `if (!user) return null`.
+* Use **narrow types** and `zod` schemas for inputs; never accept `any`.
+
+## File Organization
+
+* **File order:** exported component → subcomponents → helpers → static content → types/interfaces.
+* Place **static content and interfaces at file end** to keep render concise.
+* **Exports:** favor **named** component exports.
+
+## Function Patterns
+
+* **RORO** (Receive an Object, Return an Object) for functions.
+* Use **descriptive names** with auxiliary verbs (e.g., `isLoading`, `hasError`, `shouldRetry`).
+* Handle errors **upfront** with **guard clauses**; use **early return**; keep happy path last.
+
+```ts
+interface FetchPriceArgs { productId: string }
+interface FetchPriceResult { amount: number, currency: string }
+
+export async function fetchPrice({ productId }: FetchPriceArgs): Promise<FetchPriceResult> {
+  if (!productId) throw new Error('productId is required')
+  const { rows } = await pool.query('select amount, currency from product_price where product_id=$1', [productId])
+  if (!rows[0]) return { amount: 0, currency: 'TRY' }
+  const { amount, currency } = rows[0]
+  return { amount, currency }
+}
+```
+
+## Type Definitions
+
+* Create typed error helpers (e.g., `BadInputError`, `AuthError`).
+* **Interfaces** for object shapes; **types** for unions & utility types.
+* Use **zod** for runtime validation schemas.
+
+## Code Style
+
+* Functional & declarative programming; **avoid classes**.
+* Prefer composition, iteration, and **modularization** over duplication.
+* Avoid deep nesting and unnecessary `else`.
+* **Extensions:** `.config.ts`, `.test.ts`, `.context.tsx`, `.type.ts`, `.hook.ts`.

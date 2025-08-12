@@ -1,0 +1,122 @@
+---
+description: Performance optimization guidelines and monitoring
+---
+
+# Performance & Optimization
+
+## Performance Budgets
+
+* P95 ≤ **300ms** for simple queries; P95 ≤ **500ms** for checkout mutation (dev/staging).
+* Use DataLoader & fixed **pagination** limits; avoid unbounded lists.
+* Monitor query complexity and execution time.
+
+## Database Performance
+
+* Add proper indexes for common query patterns.
+* Use connection pooling with appropriate limits.
+* **Computed totals:** MVP computes **on read**; document this in code comments.
+* Monitor slow queries and optimize regularly.
+
+```sql
+-- Example: Performance-optimized query with index
+CREATE INDEX CONCURRENTLY idx_product_search 
+ON products USING gin(to_tsvector('english', title || ' ' || description));
+
+-- Query with proper pagination
+SELECT id, title, price 
+FROM products 
+WHERE category_id = $1 
+ORDER BY created_at DESC 
+LIMIT $2 OFFSET $3;
+```
+
+## GraphQL Performance
+
+* Use **DataLoader** to prevent N+1 queries.
+* Implement query complexity analysis.
+* Set maximum query depth limits.
+* Cache frequently accessed data at resolver level.
+
+```ts
+// Example: DataLoader implementation
+export function makeProductLoader(pool: pg.Pool) {
+  return new DataLoader<string, Product>(async (productIds) => {
+    const { rows } = await pool.query(
+      'SELECT * FROM products WHERE id = ANY($1)',
+      [productIds]
+    )
+    
+    const productMap = new Map(rows.map(p => [p.id, p]))
+    return productIds.map(id => productMap.get(id) || null)
+  })
+}
+```
+
+## Frontend Performance
+
+* **Server Components by default**; minimize `use client`.
+* **Preload** on route boundaries to avoid waterfalls.
+* Use **next/image** with WebP, width/height, and lazy loading.
+* Wrap client components in **`<Suspense>`** with fallbacks.
+
+## Caching Strategy
+
+* Implement Redis caching for frequently accessed data.
+* Use CDN for static assets and images.
+* Cache GraphQL queries at appropriate levels.
+* Set proper cache headers for API responses.
+
+## Monitoring & Metrics
+
+* Track Core Web Vitals (LCP, CLS, FID).
+* Monitor database query performance.
+* Set up alerting for performance regressions.
+* Use APM tools for detailed performance insights.
+
+```ts
+// Example: Performance monitoring
+export async function withPerformanceMonitoring<T>(
+  operation: () => Promise<T>,
+  operationName: string
+): Promise<T> {
+  const start = performance.now()
+  
+  try {
+    const result = await operation()
+    const duration = performance.now() - start
+    
+    logger.info('Operation completed', {
+      operation: operationName,
+      duration,
+      status: 'success'
+    })
+    
+    return result
+  } catch (error) {
+    const duration = performance.now() - start
+    
+    logger.error('Operation failed', {
+      operation: operationName,
+      duration,
+      error: error.message,
+      status: 'error'
+    })
+    
+    throw error
+  }
+}
+```
+
+## Bundle Optimization
+
+* Use dynamic imports for code splitting.
+* Analyze bundle size regularly.
+* Tree shake unused dependencies.
+* Optimize images and assets.
+
+## Network Performance
+
+* Minimize the number of API calls.
+* Use GraphQL query batching where appropriate.
+* Implement request/response compression.
+* Optimize payload sizes.

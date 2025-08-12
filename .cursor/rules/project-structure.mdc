@@ -1,0 +1,53 @@
+---
+alwaysApply: true
+description: Nx monorepo project structure and organization guidelines
+---
+
+# Project Structure (Nx Monorepo)
+
+## Directory Structure
+
+* Apps in `apps/`:
+  * `apps/subgraphs/*` (catalog, pricing, inventory, cart, order, payment, shipping, identity)
+  * `apps/web` (Next.js)
+  * `apps/router` (config only, if needed)
+
+* Shared code in `libs/`:
+  * `libs/shared-types` (codegen outputs, shared TS types)
+  * `libs/graphql-fragments`
+  * `libs/utils`
+
+## File & Folder Conventions
+
+* **Folders:** lowercase kebab-case (e.g., `components/auth-wizard`).
+* **Files:** lowercase‑kebab (e.g., `auth-wizard.tsx`, `product-card`).
+* **Paths:** prefer workspace imports (TS path mapping) over deep relative paths.
+
+## Data & Migration Organization
+
+* **Migrations:** `sql/<service>/NNN_name.sql` executed via `psql`.
+* **SQL:** Keep SQL in versioned files, run via `psql`.
+* **Connection strings:** from `.env`; do not hardcode.
+
+## Monorepo Guidelines
+
+* Keep subgraphs **single-purpose**; push cross-concerns to shared libs in `libs/`.
+* **Ask before breaking** public GraphQL contracts or changing shared libs in `libs/`.
+* Use Nx task caching for fast CI.
+
+## Import Patterns
+
+* Favor workspace imports over relative paths:
+  ```ts
+  // Good
+  import { UserService } from '@libs/shared-types'
+  
+  // Avoid
+  import { UserService } from '../../../libs/shared-types/src/user-service'
+  ```
+
+## File Extensions
+
+* **Extensions:** `.config.ts`, `.test.ts`, `.context.tsx`, `.type.ts`, `.hook.ts`
+* **GraphQL:** `.graphql`, `.gql` files for schema definitions
+* **SQL:** `.sql` files in versioned migration directories

@@ -1,0 +1,26 @@
+{
+  "name": "@ecommerce-federation/source",
+  "version": "0.0.0",
+  "license": "MIT",
+  "scripts": {},
+  "private": true,
+  "devDependencies": {
+    "@nx/js": "21.3.11",
+    "@nx/next": "^21.3.11",
+    "@nx/node": "^21.3.11",
+    "@swc-node/register": "~1.9.1",
+    "@swc/core": "~1.5.7",
+    "@swc/helpers": "~0.5.11",
+    "nx": "21.3.11",
+    "prettier": "^2.6.2",
+    "ts-node-dev": "^2.0.0",
+    "tslib": "^2.3.0",
+    "typescript": "~5.8.2"
+  },
+  "dependencies": {
+    "@apollo/server": "^5.0.0",
+    "@apollo/subgraph": "^2.11.2",
+    "graphql": "^16.11.0",
+    "graphql-tag": "^2.12.6"
+  }
+}

@@ -1,0 +1,149 @@
+---
+globs: *.test.ts,*.test.tsx,*.spec.ts,*.spec.tsx,**/tests/**,**/test/**
+description: Testing strategy and patterns for the e-commerce system
+---
+
+# Testing Strategy
+
+## Testing Pyramid
+
+* **Unit:** Vitest/Jest for utils & resolvers.
+* **Integration:** Subgraph tests with seeded DB (fixtures).
+* **Contract/Composition:** CI runs rover composition; add router smoke queries.
+* **E2E (web):** Playwright for critical flows (browse → cart → checkout).
+
+## Unit Testing Patterns
+
+```ts
+// Example: Service unit test
+import { describe, it, expect, beforeEach } from 'vitest'
+import { createMockPool } from './test-utils'
+import { fetchPrice } from '../price-service'
+
+describe('fetchPrice', () => {
+  let mockPool: ReturnType<typeof createMockPool>
+  
+  beforeEach(() => {
+    mockPool = createMockPool()
+  })
+  
+  it('should return price for valid product', async () => {
+    mockPool.query.mockResolvedValue({
+      rows: [{ amount: 29.99, currency: 'TRY' }]
+    })
+    
+    const result = await fetchPrice({ productId: 'prod-123' })
+    
+    expect(result).toEqual({ amount: 29.99, currency: 'TRY' })
+    expect(mockPool.query).toHaveBeenCalledWith(
+      'select amount, currency from product_price where product_id=$1',
+      ['prod-123']
+    )
+  })
+  
+  it('should throw error for missing productId', async () => {
+    await expect(fetchPrice({ productId: '' }))
+      .rejects.toThrow('productId is required')
+  })
+})
+```
+
+## Integration Testing
+
+* Test subgraphs with real database connections.
+* Use database fixtures for consistent test data.
+* Test GraphQL operations end-to-end within subgraph.
+
+```ts
+// Example: Integration test setup
+import { startTestServer } from './test-server'
+import { seedDatabase, cleanDatabase } from './test-fixtures'
+
+describe('Product Subgraph Integration', () => {
+  let server: TestServer
+  
+  beforeAll(async () => {
+    server = await startTestServer()
+    await seedDatabase()
+  })
+  
+  afterAll(async () => {
+    await cleanDatabase()
+    await server.stop()
+  })
+  
+  it('should fetch product with price', async () => {
+    const result = await server.executeOperation({
+      query: `
+        query GetProduct($id: ID!) {
+          product(id: $id) {
+            id
+            title
+            currentPrice {
+              amount
+              currency
+            }
+          }
+        }
+      `,
+      variables: { id: 'test-product-1' }
+    })
+    
+    expect(result.errors).toBeUndefined()
+    expect(result.data?.product).toMatchObject({
+      id: 'test-product-1',
+      title: 'Test Product',
+      currentPrice: {
+        amount: 29.99,
+        currency: 'TRY'
+      }
+    })
+  })
+})
+```
+
+## E2E Testing with Playwright
+
+* Focus on critical user journeys.
+* Test across different browsers and devices.
+* Use page object model for maintainable tests.
+
+```ts
+// Example: E2E test
+import { test, expect } from '@playwright/test'
+
+test('complete purchase flow', async ({ page }) => {
+  // Browse products
+  await page.goto('/products')
+  await page.click('[data-testid="product-card-1"]')
+  
+  // Add to cart
+  await page.click('[data-testid="add-to-cart"]')
+  await expect(page.locator('[data-testid="cart-count"]')).toHaveText('1')
+  
+  // Checkout
+  await page.click('[data-testid="cart-button"]')
+  await page.click('[data-testid="checkout-button"]')
+  
+  // Complete purchase
+  await page.fill('[data-testid="email"]', 'test@example.com')
+  await page.fill('[data-testid="card-number"]', '4242424242424242')
+  await page.click('[data-testid="complete-purchase"]')
+  
+  await expect(page.locator('[data-testid="success-message"]'))
+    .toBeVisible()
+})
+```
+
+## Test Data Management
+
+* Use factories for creating test data.
+* Clean up test data after each test.
+* Use database transactions for test isolation.
+
+## CI/CD Testing
+
+* Run unit tests on every commit.
+* Run integration tests on PR creation.
+* Run E2E tests before deployment.
+* Fail builds on test failures or coverage drops.

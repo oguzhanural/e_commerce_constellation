@@ -1,0 +1,108 @@
+---
+alwaysApply: true
+description: Naming conventions and code hygiene standards
+---
+
+# Naming Conventions & Code Hygiene
+
+## Naming Patterns
+
+* **Booleans:** `is*`, `has*`, `should*`, `can*` (e.g., `isLoading`, `hasError`, `shouldRetry`, `canEdit`).
+* **Files/dirs:** lowercase‑kebab (e.g., `auth-wizard.tsx`, `product-card`).
+* **Functions:** descriptive verbs with clear intent (e.g., `fetchUserById`, `validateInput`, `transformData`).
+* **Variables:** descriptive nouns (e.g., `userProfile`, `productList`, `orderTotal`).
+
+## File Extensions & Organization
+
+* **Extensions:** `.config.ts`, `.test.ts`, `.context.tsx`, `.type.ts`, `.hook.ts`.
+* **GraphQL:** `.graphql`, `.gql` files for schema definitions.
+* **SQL:** `.sql` files in versioned migration directories.
+
+## Component Naming
+
+```tsx
+// Good: Descriptive component names
+export function ProductCard({ product }: ProductCardProps) { }
+export function AuthWizard({ onComplete }: AuthWizardProps) { }
+export function PaymentForm({ orderId }: PaymentFormProps) { }
+
+// Bad: Generic or unclear names
+export function Card({ data }: CardProps) { }
+export function Wizard({ callback }: WizardProps) { }
+export function Form({ id }: FormProps) { }
+```
+
+## Function Naming
+
+```ts
+// Good: Clear intent and return type
+export async function fetchProductById(id: string): Promise<Product | null> { }
+export function validateEmailAddress(email: string): boolean { }
+export function calculateOrderTotal(items: CartItem[]): number { }
+
+// Bad: Unclear or generic names
+export async function get(id: string) { }
+export function check(email: string) { }
+export function calc(items: any[]) { }
+```
+
+## Variable Naming
+
+```ts
+// Good: Descriptive and contextual
+const userProfile = await fetchUserProfile(userId)
+const isEmailValid = validateEmailAddress(email)
+const hasPermission = checkUserPermission(user, 'edit_product')
+
+// Bad: Abbreviations and unclear context
+const up = await fetch(id)
+const valid = validate(email)
+const perm = check(user, 'edit')
+```
+
+## Constants & Configuration
+
+```ts
+// Good: SCREAMING_SNAKE_CASE for constants
+const MAX_RETRY_ATTEMPTS = 3
+const DEFAULT_PAGE_SIZE = 20
+const SUPPORTED_CURRENCIES = ['USD', 'EUR', 'TRY'] as const
+
+// Bad: Mixed case for constants
+const maxRetries = 3
+const pageSize = 20
+```
+
+## Commit & PR Hygiene
+
+* Conventional commits: `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`, `test:`.
+* Small PRs with **before/after** notes and screenshots where applicable.
+* PR must pass CI, codegen up‑to‑date, and include any necessary SQL migration files.
+
+```bash
+# Good commit messages
+feat: add product search functionality
+fix: resolve cart total calculation error
+refactor: extract payment processing service
+chore: update dependencies to latest versions
+
+# Bad commit messages
+update stuff
+fix bug
+changes
+wip
+```
+
+## Code Organization
+
+* **File order:** exported component → subcomponents → helpers → static content → types/interfaces.
+* Group related functionality together.
+* Use consistent indentation and formatting.
+* Remove unused imports and variables.
+
+## Documentation
+
+* Use JSDoc for complex functions and public APIs.
+* Include examples in documentation.
+* Document non-obvious business logic.
+* Keep README files up to date with setup instructions.
