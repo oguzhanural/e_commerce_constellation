@@ -27,16 +27,20 @@ jobs:
         with:
           node-version: '22'
           cache: 'pnpm'
+
+      # 3. pnpm'in bulunabilmesi için corepack'i etkinleştir
+      - name: Enable Corepack
+        run: corepack enable
       
-      # 3. Proje bağımlılıklarını yükler
+      # 4. Proje bağımlılıklarını yükler
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       
-      # 4. Lint kontrolünü çalıştırır
+      # 5. Lint kontrolünü çalıştırır
       - name: Run linter
         run: pnpm lint
       
-      # 5. TypeScript tip kontrolünü çalıştırır
+      # 6. TypeScript tip kontrolünü çalıştırır
       - name: Run type-check
         run: pnpm type-check
 
