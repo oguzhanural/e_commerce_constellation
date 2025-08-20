@@ -2,7 +2,10 @@
   "name": "@ecommerce-federation/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "lint": "nx run-many --target=lint",
+    "type-check": "nx run-many --target=type-check"
+  },
   "private": true,
   "engines": {
     "node": ">=22.0.0 <23.0.0",
