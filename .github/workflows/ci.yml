@@ -21,14 +21,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      # 2. Node.js ve pnpm'i kurar
-      - name: Setup Node.js and pnpm
+      # 2. Node.js'i kurar
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'pnpm'
 
-       # 3. YENİ ve DOĞRU ADIM: pnpm'i resmi action ile kur
+       # 3. pnpm'i resmi action ile kur
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
