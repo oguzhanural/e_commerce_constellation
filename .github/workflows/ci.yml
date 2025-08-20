@@ -1,0 +1,45 @@
+name: CI Pipeline
+
+# Bu workflow'un ne zaman çalışacağını belirler
+on:
+  # 'develop' branch'ine her push yapıldığında çalışır
+  push:
+    branches:
+      - develop
+  # 'main' veya 'develop' branch'lerini hedefleyen her Pull Request'te çalışır
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  test-and-lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # 1. Kodu repository'den indirir
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      # 2. Node.js ve pnpm'i kurar
+      - name: Setup Node.js and pnpm
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+      
+      # 3. Proje bağımlılıklarını yükler
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      # 4. Lint kontrolünü çalıştırır
+      - name: Run linter
+        run: pnpm lint
+      
+      # 5. TypeScript tip kontrolünü çalıştırır
+      - name: Run type-check
+        run: pnpm type-check
+
+      # Veritabanı gerektiren testler ve supergraph derlemesi için
+      # bu dosyaya daha sonra veritabanı servislerini ekleyeceğiz.
+      # Şimdilik bu temel kontroller yeterli.
