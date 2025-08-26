@@ -1,0 +1,1 @@
+// Identity subgraph schema

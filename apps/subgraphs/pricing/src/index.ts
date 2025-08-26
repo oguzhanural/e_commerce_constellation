@@ -1,0 +1,1 @@
+// Pricing subgraph entry point

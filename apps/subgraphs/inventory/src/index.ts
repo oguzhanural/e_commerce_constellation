@@ -1,0 +1,1 @@
+// Inventory subgraph entry point

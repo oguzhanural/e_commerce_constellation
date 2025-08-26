@@ -1,0 +1,1 @@
+// Shipping subgraph schema

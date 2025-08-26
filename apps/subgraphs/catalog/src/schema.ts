@@ -1,0 +1,1 @@
+// Catalog subgraph schema
