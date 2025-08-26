@@ -1,0 +1,1 @@
+// Catalog subgraph entry point
