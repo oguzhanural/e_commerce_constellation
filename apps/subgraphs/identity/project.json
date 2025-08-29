@@ -1,0 +1,15 @@
+{
+    "name": "identity",
+    "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "apps/subgraphs/identity/src",
+    "projectType": "application",
+    "targets": {
+      "serve": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "ts-node-dev apps/subgraphs/identity/src/index.ts"
+        }
+      }
+    },
+    "tags": []
+  }
