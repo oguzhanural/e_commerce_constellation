@@ -2,7 +2,7 @@ import gql from 'graphql-tag';
 
 export const typeDefs = gql`
   extend schema
-  @link(url: "https://specs.apollo.dev/federation/v2.11", import: ["@key", "@shareable", "@override", "@inaccessible", "@tag", "@authenticated", "@requiresScopes", "@policy", "@connector"])
+  @link(url: "https://specs.apollo.dev/federation/v2.11", import: ["@key", "@shareable", "@override", "@inaccessible", "@tag", "@authenticated", "@requiresScopes", "@policy"])
 
   type Product @key(fields: "id") {
     id: ID!
